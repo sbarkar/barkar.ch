@@ -1,6 +1,6 @@
 # CLAUDE.md — barkar.ch
 
-Context file for Claude Code and AI coding assistants working on this repository. Read this before making any changes.
+Context file for Claude Code and AI coding assistants working on this repository. Read this before making any changes. Agents driving a PR should also read `.claude/skills/steward/SKILL.md`; reviewers should read `REVIEW.md`.
 
 > A more verbose version of these instructions (for GitHub Copilot) lives at `.github/copilot-instructions.md`.
 
@@ -11,9 +11,10 @@ Context file for Claude Code and AI coding assistants working on this repository
 Personal CV/portfolio website at **barkar.ch**. It is a single-page, static Next.js site that renders entirely from one central data object. There is no backend, no database, and no API routes.
 
 **Stack:**
+
 - **Next.js 16** (App Router, static export)
 - **React 19**
-- **TypeScript 5** (strict mode)
+- **TypeScript 6** (strict mode)
 - **Tailwind CSS 4** (utility-first, `@theme` directive)
 - **shadcn/ui** primitives backed by Radix UI
 - **Yarn 1.22** (only — no npm, no pnpm)
@@ -43,11 +44,15 @@ barkar.ch/
 │   └── types/
 │       └── images.d.ts         # Image module type declarations
 ├── public/                     # Static assets (OG image, sitemap, robots, PWA manifest)
+├── .claude/
+│   ├── settings.json           # Shared Claude Code permissions + SessionStart hook
+│   ├── hooks/session-start.sh  # Installs deps in Claude Code cloud sessions
+│   └── skills/steward/         # How agents drive a PR to green in this repo
 ├── .github/
 │   ├── copilot-instructions.md # Detailed AI instructions (Copilot-oriented)
 │   ├── workflows/
 │   │   ├── ci.yml              # Build + lint on every push / PR
-│   │   ├── deploy.yml          # Deployment workflow
+│   │   ├── deploy.yml          # Static export → GitHub Pages on push to main
 │   │   └── dependabot-automerge.yml
 │   └── PULL_REQUEST_TEMPLATE.md
 ├── docs/                       # Developer checklists and setup guides
@@ -56,26 +61,27 @@ barkar.ch/
 ├── tsconfig.json
 ├── Dockerfile                  # Multi-stage Node 20 Alpine build
 ├── docker-compose.yaml
-└── vercel.json
+├── vercel.json
+└── REVIEW.md                   # What reviewers / Claude Code Review should flag
 ```
 
 ---
 
 ## Key Files — What to Edit for Common Tasks
 
-| Task | File |
-|---|---|
-| Add/update resume content | `src/data/resume-data.tsx` |
-| Change page layout or sections | `src/app/page.tsx` |
-| Change global styles or CSS variables | `src/app/globals.css` |
-| Update fonts, metadata, analytics | `src/app/layout.tsx` |
-| Add/modify a UI primitive | `src/components/ui/<name>.tsx` |
-| Add a higher-level component | `src/components/<name>.tsx` |
-| Add a logo or image asset | `src/images/logos/` |
-| Adjust build / Next.js config | `next.config.js` |
-| Adjust Tailwind config | `tailwind.config.js` |
-| Docker / self-hosting | `Dockerfile`, `docker-compose.yaml` |
-| Vercel deployment config | `vercel.json` |
+| Task                                  | File                                |
+| ------------------------------------- | ----------------------------------- |
+| Add/update resume content             | `src/data/resume-data.tsx`          |
+| Change page layout or sections        | `src/app/page.tsx`                  |
+| Change global styles or CSS variables | `src/app/globals.css`               |
+| Update fonts, metadata, analytics     | `src/app/layout.tsx`                |
+| Add/modify a UI primitive             | `src/components/ui/<name>.tsx`      |
+| Add a higher-level component          | `src/components/<name>.tsx`         |
+| Add a logo or image asset             | `src/images/logos/`                 |
+| Adjust build / Next.js config         | `next.config.js`                    |
+| Adjust Tailwind config                | `tailwind.config.js`                |
+| Docker / self-hosting                 | `Dockerfile`, `docker-compose.yaml` |
+| Vercel deployment config              | `vercel.json`                       |
 
 ---
 
@@ -91,8 +97,8 @@ yarn dev          # http://localhost:3000
 # Production build (also runs TypeScript type-checking)
 yarn build
 
-# Run production server locally
-yarn start
+# Preview the static export (output: "export" → ./out; `yarn start` does not work)
+npx serve out
 
 # Lint
 yarn lint
@@ -113,26 +119,31 @@ docker compose down
 ## Code Conventions
 
 ### TypeScript
+
 - Strict mode is enabled — fix type errors, never use `any` (use `unknown` or a proper type)
 - Use `as const` for static data to get precise literal types (see `RESUME_DATA`)
 - Prefer named exports over default exports (better tree-shaking, easier refactoring)
 - Use `export type` for type-only exports
 
 ### Imports
+
 - Use the `@/` alias for all internal imports (maps to `src/` — see `tsconfig.json`)
 - Import only what you need from libraries (never `import * as Icons from 'lucide-react'`)
 
 ### Server vs Client Components
+
 - Files in `src/app/` are **server components by default** — do not add `"use client"` unless necessary
 - Add `"use client"` only when a component needs: hooks, event handlers, or browser APIs
 - Keep client components small and focused (see `command-menu.tsx`, `print-drawer.tsx`)
 
 ### Naming
+
 - Component files: `kebab-case.tsx` (e.g., `project-card.tsx`)
 - Component exports: `PascalCase` (e.g., `export const ProjectCard = ...`)
 - Directories: `kebab-case`
 
 ### External Links
+
 Always include `rel="noopener noreferrer"` on `target="_blank"` links to prevent tabnabbing.
 
 ---
@@ -188,14 +199,15 @@ Plausible Analytics is loaded via a CDN `<script>` tag in `src/app/layout.tsx`. 
 
 ## CI / CD
 
-| Workflow | Trigger | What it does |
-|---|---|---|
-| `ci.yml` | Every push / PR | `yarn install --frozen-lockfile` → `yarn build` → `yarn lint` |
-| `deploy.yml` | Configured trigger | Deploys to production |
-| `dependabot-automerge.yml` | Dependabot PRs | Auto-approves and merges minor/patch updates when CI passes |
+| Workflow                   | Trigger                | What it does                                                   |
+| -------------------------- | ---------------------- | -------------------------------------------------------------- |
+| `ci.yml`                   | Every push / PR        | `yarn install --frozen-lockfile` → `yarn build` → `yarn lint`  |
+| `deploy.yml`               | Push to `main`, manual | Builds the static export (`./out`) and deploys to GitHub Pages |
+| `dependabot-automerge.yml` | Dependabot PRs         | Auto-approves and merges minor/patch updates when CI passes    |
 
-- **Vercel** is the primary deployment target. Pushing to `main` triggers a production deploy.
-- **Docker** (`Dockerfile` + `docker-compose.yaml`) supports self-hosting on Node 20 Alpine.
+- **Two deploy targets** run on every push to `main`: GitHub Pages (`deploy.yml`) and Vercel (`vercel.json`, Git integration). Vercel also posts PR previews.
+- **Docker** (`Dockerfile` + `docker-compose.yaml`) is currently out of sync: it expects `.next/standalone`, but `next.config.js` uses `output: "export"`. Don't rely on it until it is fixed.
+- **Format check:** CI does not run Prettier, so run `npx prettier --check .` yourself before pushing.
 - CI must pass before merging any PR to `main`.
 
 ---
@@ -217,7 +229,7 @@ Plausible Analytics is loaded via a CDN `<script>` tag in `src/app/layout.tsx`. 
 ## Pre-Commit Validation Checklist
 
 1. `yarn lint` — no ESLint errors
-2. `npx prettier --write .` — classes and formatting are clean
+2. `npx prettier --write <changed files>` — classes and formatting are clean
 3. `yarn build` — production build succeeds, no TypeScript errors
 4. Visual check at `http://localhost:3000`
 5. Check print layout (`Ctrl+P` / `Cmd+P`) if you changed visible content
