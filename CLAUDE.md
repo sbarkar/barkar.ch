@@ -54,7 +54,8 @@ barkar.ch/
 ├── next.config.js
 ├── tailwind.config.js
 ├── tsconfig.json
-├── Dockerfile                  # Multi-stage Node 20 Alpine build
+├── Dockerfile                  # Multi-stage: Node 20 Alpine build → nginx serves ./out
+├── docker/nginx.conf           # nginx config for the static export
 ├── docker-compose.yaml
 └── vercel.json
 ```
@@ -74,7 +75,7 @@ barkar.ch/
 | Add a logo or image asset | `src/images/logos/` |
 | Adjust build / Next.js config | `next.config.js` |
 | Adjust Tailwind config | `tailwind.config.js` |
-| Docker / self-hosting | `Dockerfile`, `docker-compose.yaml` |
+| Docker / self-hosting | `Dockerfile`, `docker/nginx.conf`, `docker-compose.yaml` |
 | Vercel deployment config | `vercel.json` |
 
 ---
@@ -102,7 +103,7 @@ npx prettier --write .
 
 # Docker
 docker compose build
-docker compose up -d
+docker compose up -d    # http://localhost:3000
 docker compose down
 ```
 
@@ -195,7 +196,7 @@ Plausible Analytics is loaded via a CDN `<script>` tag in `src/app/layout.tsx`. 
 | `dependabot-automerge.yml` | Dependabot PRs | Auto-approves and merges minor/patch updates when CI passes |
 
 - **Vercel** is the primary deployment target. Pushing to `main` triggers a production deploy.
-- **Docker** (`Dockerfile` + `docker-compose.yaml`) supports self-hosting on Node 20 Alpine.
+- **Docker** (`Dockerfile` + `docker-compose.yaml`) supports self-hosting. Because `next.config.js` uses `output: "export"`, there is no Node server: the image builds with Node 20 Alpine + Yarn (`yarn install --frozen-lockfile` → `yarn build` → `./out`) and serves `./out` from an `nginx:alpine` runtime stage (config in `docker/nginx.conf`). The container listens on port 80; `docker-compose.yaml` maps it to host port `3000` and healthchecks `/`.
 - CI must pass before merging any PR to `main`.
 
 ---

@@ -1,10 +1,12 @@
-version: "3.8"
-
 services:
   app:
     build: .
     ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=production
+      - "3000:80"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      start_period: 5s
+      retries: 3
     restart: unless-stopped
