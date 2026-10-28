@@ -59,7 +59,8 @@ barkar.ch/
 ├── next.config.js
 ├── tailwind.config.js
 ├── tsconfig.json
-├── Dockerfile                  # Multi-stage Node 20 Alpine build
+├── Dockerfile                  # Multi-stage: Node 20 Alpine build → nginx serves ./out
+├── docker/nginx.conf           # nginx config for the static export
 ├── docker-compose.yaml
 ├── vercel.json
 └── REVIEW.md                   # What reviewers / Claude Code Review should flag
@@ -69,19 +70,19 @@ barkar.ch/
 
 ## Key Files — What to Edit for Common Tasks
 
-| Task                                  | File                                |
-| ------------------------------------- | ----------------------------------- |
-| Add/update resume content             | `src/data/resume-data.tsx`          |
-| Change page layout or sections        | `src/app/page.tsx`                  |
-| Change global styles or CSS variables | `src/app/globals.css`               |
-| Update fonts, metadata, analytics     | `src/app/layout.tsx`                |
-| Add/modify a UI primitive             | `src/components/ui/<name>.tsx`      |
-| Add a higher-level component          | `src/components/<name>.tsx`         |
-| Add a logo or image asset             | `src/images/logos/`                 |
-| Adjust build / Next.js config         | `next.config.js`                    |
-| Adjust Tailwind config                | `tailwind.config.js`                |
-| Docker / self-hosting                 | `Dockerfile`, `docker-compose.yaml` |
-| Vercel deployment config              | `vercel.json`                       |
+| Task                                  | File                                                     |
+| ------------------------------------- | -------------------------------------------------------- |
+| Add/update resume content             | `src/data/resume-data.tsx`                               |
+| Change page layout or sections        | `src/app/page.tsx`                                       |
+| Change global styles or CSS variables | `src/app/globals.css`                                    |
+| Update fonts, metadata, analytics     | `src/app/layout.tsx`                                     |
+| Add/modify a UI primitive             | `src/components/ui/<name>.tsx`                           |
+| Add a higher-level component          | `src/components/<name>.tsx`                              |
+| Add a logo or image asset             | `src/images/logos/`                                      |
+| Adjust build / Next.js config         | `next.config.js`                                         |
+| Adjust Tailwind config                | `tailwind.config.js`                                     |
+| Docker / self-hosting                 | `Dockerfile`, `docker/nginx.conf`, `docker-compose.yaml` |
+| Vercel deployment config              | `vercel.json`                                            |
 
 ---
 
@@ -108,7 +109,7 @@ npx prettier --write .
 
 # Docker
 docker compose build
-docker compose up -d
+docker compose up -d    # http://localhost:3000
 docker compose down
 ```
 
@@ -206,7 +207,7 @@ Plausible Analytics is loaded via a CDN `<script>` tag in `src/app/layout.tsx`. 
 | `dependabot-automerge.yml` | Dependabot PRs         | Auto-approves and merges minor/patch updates when CI passes    |
 
 - **Two deploy targets** run on every push to `main`: GitHub Pages (`deploy.yml`) and Vercel (`vercel.json`, Git integration). Vercel also posts PR previews.
-- **Docker** (`Dockerfile` + `docker-compose.yaml`) is currently out of sync: it expects `.next/standalone`, but `next.config.js` uses `output: "export"`. Don't rely on it until it is fixed.
+- **Docker** (`Dockerfile` + `docker-compose.yaml`) supports self-hosting. Because `next.config.js` uses `output: "export"`, there is no Node server: the image builds with Node 20 Alpine + Yarn (`yarn install --frozen-lockfile` → `yarn build` → `./out`) and serves `./out` from an `nginx:alpine` runtime stage (config in `docker/nginx.conf`). The container listens on port 80; `docker-compose.yaml` maps it to host port `3000` and healthchecks `/`.
 - **Format check:** CI does not run Prettier, so run `npx prettier --check .` yourself before pushing.
 - CI must pass before merging any PR to `main`.
 
