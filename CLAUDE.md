@@ -204,7 +204,7 @@ Plausible Analytics is loaded via a CDN `<script>` tag in `src/app/layout.tsx`. 
 | -------------------------- | ---------------------- | -------------------------------------------------------------- |
 | `ci.yml`                   | Every push / PR        | `yarn install --frozen-lockfile` → `yarn build` → `yarn lint`  |
 | `deploy.yml`               | Push to `main`, manual | Builds the static export (`./out`) and deploys to GitHub Pages |
-| `dependabot-automerge.yml` | Dependabot PRs         | Auto-approves and merges minor/patch updates when CI passes    |
+| `dependabot-automerge.yml` | Dependabot PRs         | Auto-approves and merges Dependabot updates when CI passes     |
 
 - **Two deploy targets** run on every push to `main`: GitHub Pages (`deploy.yml`) and Vercel (`vercel.json`, Git integration). Vercel also posts PR previews.
 - **Docker** (`Dockerfile` + `docker-compose.yaml`) supports self-hosting. Because `next.config.js` uses `output: "export"`, there is no Node server: the image builds with Node 20 Alpine + Yarn (`yarn install --frozen-lockfile` → `yarn build` → `./out`) and serves `./out` from an `nginx:alpine` runtime stage (config in `docker/nginx.conf`). The container listens on port 80; `docker-compose.yaml` maps it to host port `3000` and healthchecks `/`.

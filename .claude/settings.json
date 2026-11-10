@@ -17,6 +17,7 @@
       "Bash(npm i:*)",
       "Bash(pnpm:*)",
       "Read(./.env)",
+      "Read(./.env.local)",
       "Read(./.env.*.local)"
     ]
   },

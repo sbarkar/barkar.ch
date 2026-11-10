@@ -19,7 +19,25 @@ updates:
         update-types:
           - "minor"
           - "patch"
-    # Note: Major version updates are NOT grouped and create individual PRs
-    # This allows for manual review of breaking changes if desired
-    # To disable auto-merge for major updates, comment on the PR:
-    # @dependabot ignore this major version
+    # Major version updates are NOT grouped and create individual PRs.
+    # The auto-merge workflow merges them too once CI is green.
+
+  # Keep the pinned action SHAs in the workflows up to date
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore(deps)"
+
+  # Keep the Dockerfile base images up to date
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # CI does not build the image, so a new Node or nginx major would merge untested
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    commit-message:
+      prefix: "chore(deps)"

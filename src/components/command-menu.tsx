@@ -70,7 +70,7 @@ export const CommandMenu = ({ links }: Props) => {
                 key={url}
                 onSelect={() => {
                   setOpen(false);
-                  window.open(url, "_blank");
+                  window.open(url, "_blank", "noopener,noreferrer");
                 }}
               >
                 <span>{title}</span>

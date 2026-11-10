@@ -8,4 +8,6 @@ if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
 fi
 
 cd "$CLAUDE_PROJECT_DIR"
-yarn install --frozen-lockfile --non-interactive >/dev/null
+# --ignore-scripts: build and lint work without dependency install scripts, so do not
+# run third-party lifecycle scripts automatically at session start.
+yarn install --frozen-lockfile --non-interactive --ignore-scripts >/dev/null

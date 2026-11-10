@@ -89,7 +89,8 @@ jobs:
 **Security notes:**
 
 - Uses `pull_request_target` for secure token access
-- Only runs for PRs created by `dependabot[bot]`
+- Only runs for PRs authored by `dependabot[bot]` from a branch in this repository (checks the PR author and head repo, not `github.actor`)
+- Actions are pinned to commit SHAs; Dependabot's `github-actions` ecosystem keeps them current
 - Uses built-in `GITHUB_TOKEN` (no additional secrets needed)
 
 ## Update Types and Behavior
@@ -118,7 +119,7 @@ Major version updates may contain breaking changes. Auto-merging is safe **only 
 - Reviewing the changelog before merge
 - Testing in a staging environment first
 
-**Current setup:** All major updates auto-merge by default. This works well for a personal CV site with good CI coverage. Adjust based on your risk tolerance.
+**Current setup:** All updates, including majors, auto-merge once CI is green. This is a deliberate choice for a low-priority personal CV site. A major that breaks the build stays open with a red check. Docker base-image majors are ignored in `.github/dependabot.yml` because CI does not build the image.
 
 ## Monitoring and Control
 
