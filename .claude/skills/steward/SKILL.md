@@ -31,11 +31,11 @@ Do not reformat files the PR does not otherwise touch.
 
 ## Dependabot PRs
 
-- `dependabot-automerge.yml` auto-approves and squash-merges minor/patch bumps once CI is green.
+- `dependabot-automerge.yml` auto-approves and squash-merges every bump (majors included) once CI is green.
   Leave those alone unless CI is red.
 - For a red Dependabot PR: fix forward on the Dependabot branch with a merge commit
   (never rebase/force-push it), or report the breaking change if the fix is non-trivial.
-- Major-version bumps need the maintainer's call — summarize the breaking changes and stop.
+- A red major-version bump: summarize the breaking changes for the maintainer and stop.
 - Never edit `yarn.lock` by hand; regenerate with `yarn install`.
 
 ## Review comments

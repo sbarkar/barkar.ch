@@ -20,7 +20,7 @@ updates:
           - "minor"
           - "patch"
     # Major version updates are NOT grouped and create individual PRs.
-    # The auto-merge workflow skips them, so they wait for manual review.
+    # The auto-merge workflow merges them too once CI is green.
 
   # Keep the pinned action SHAs in the workflows up to date
   - package-ecosystem: "github-actions"
@@ -35,5 +35,9 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    # CI does not build the image, so a new Node or nginx major would merge untested
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     commit-message:
       prefix: "chore(deps)"
