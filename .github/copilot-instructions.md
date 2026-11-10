@@ -30,7 +30,7 @@ Purpose: make AI coding agents immediately productive editing this Next.js CV si
 
 **Dev & build workflows (commands):**
 
-- Install: `yarn install` (or `npm install`).
+- Install: `yarn install --frozen-lockfile` (Yarn only; never npm or pnpm).
 - Dev: `yarn dev` (runs `next dev`).
 - Build: `yarn build` (runs `next build`).
 - Start (production): `yarn start` (runs `next start`).

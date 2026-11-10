@@ -48,9 +48,9 @@ Navigate to: **Settings → Actions → General**
 
 #### Workflow Permissions:
 
-- [ ] **Read and write permissions** - ✅ MUST be selected
-  - Required for workflows to approve and merge PRs
-  - Alternative: Keep "Read repository contents" and add specific permissions (already in workflow)
+- [ ] **Read repository contents and packages permissions** - ⭐ Recommended
+  - Every workflow in this repo declares the permissions it needs, so the default token can stay read-only
+  - "Read and write permissions" also works but grants more than necessary
 
 #### Allow GitHub Actions:
 
@@ -110,7 +110,7 @@ When properly configured, you should see:
 
 ### "Workflow does not have permissions to approve"
 
-- **Fix:** Enable "Read and write permissions" in Actions settings
+- **Fix:** Enable "Allow GitHub Actions to create and approve pull requests" in Actions settings
 
 ### "Review required" but auto-merge not working
 

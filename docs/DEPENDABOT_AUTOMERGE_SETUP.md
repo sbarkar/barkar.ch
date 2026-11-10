@@ -89,22 +89,24 @@ jobs:
 **Security notes:**
 
 - Uses `pull_request_target` for secure token access
-- Only runs for PRs created by `dependabot[bot]`
+- Only runs for PRs authored by `dependabot[bot]` from a branch in this repository (checks the PR author and head repo, not `github.actor`)
+- Skips major version updates, which wait for manual review
+- Actions are pinned to commit SHAs; Dependabot's `github-actions` ecosystem keeps them current
 - Uses built-in `GITHUB_TOKEN` (no additional secrets needed)
 
 ## Update Types and Behavior
 
-| Update Type                     | Behavior                              | Risk Level | Recommendation              |
-| ------------------------------- | ------------------------------------- | ---------- | --------------------------- |
-| **Patch** (e.g., 1.0.0 → 1.0.1) | Grouped and auto-merged               | 🟢 Low     | Safe to auto-merge          |
-| **Minor** (e.g., 1.0.0 → 1.1.0) | Grouped and auto-merged               | 🟡 Medium  | Safe to auto-merge with CI  |
-| **Major** (e.g., 1.0.0 → 2.0.0) | Separate PR, auto-merged if CI passes | 🔴 High    | Requires strong CI coverage |
+| Update Type                     | Behavior                     | Risk Level | Recommendation             |
+| ------------------------------- | ---------------------------- | ---------- | -------------------------- |
+| **Patch** (e.g., 1.0.0 → 1.0.1) | Grouped and auto-merged      | 🟢 Low     | Safe to auto-merge         |
+| **Minor** (e.g., 1.0.0 → 1.1.0) | Grouped and auto-merged      | 🟡 Medium  | Safe to auto-merge with CI |
+| **Major** (e.g., 1.0.0 → 2.0.0) | Separate PR, not auto-merged | 🔴 High    | Review and merge manually  |
 
-**All updates must pass CI (build + lint) before merging.**
+**All auto-merged updates must pass CI (build + lint) before merging.**
 
 ### ⚠️ Major Version Update Considerations
 
-Major version updates may contain breaking changes. Auto-merging is safe **only if**:
+Major version updates may contain breaking changes, so the workflow does not approve or merge them. If you ever re-enable auto-merge for majors, it is safe **only if**:
 
 - ✅ Your CI suite thoroughly tests all functionality
 - ✅ Your build process catches TypeScript/compilation errors
@@ -118,7 +120,7 @@ Major version updates may contain breaking changes. Auto-merging is safe **only 
 - Reviewing the changelog before merge
 - Testing in a staging environment first
 
-**Current setup:** All major updates auto-merge by default. This works well for a personal CV site with good CI coverage. Adjust based on your risk tolerance.
+**Current setup:** Minor and patch updates auto-merge; major updates stay open until a maintainer reviews and merges them. To change this, edit the `update-type` conditions in `.github/workflows/dependabot-automerge.yml`.
 
 ## Monitoring and Control
 
