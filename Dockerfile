@@ -23,7 +23,7 @@ COPY . .
 RUN yarn build
 
 # Stage 3: Runner — static file server
-FROM nginx:1.27-alpine AS runner
+FROM nginx:1.31-alpine AS runner
 
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY docker/security-headers.conf /etc/nginx/snippets/security-headers.conf
